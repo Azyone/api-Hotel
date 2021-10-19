@@ -8,4 +8,4 @@ const thingSchema = mongoose.Schema({
     image: { type: String, required: true}
 });
 
-module.exports = mongoose.model('Thing', thingSchema);
+module.exports = mongoose.model('Chambre', thingSchema);

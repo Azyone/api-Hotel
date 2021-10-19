@@ -1,4 +1,4 @@
-const Thing = require('../models/Thing');
+const Thing = require('../models/chambre');
 const auth = require('../middleware/auth');
 const multer = require('../middleware/multer-config');
 const fs = require('fs');

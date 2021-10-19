@@ -6,7 +6,7 @@ module.exports = (req, res, next) => {
         const decode = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
         const userId = decode.userId;
         const type = decode.type;
-        if (req.body.userId && req.body.userId !== userId){
+        if (req.body.userId && req.body.userId !== userId && req.body.type && req.body.type == type){
             throw 'Utilisateur incorect !';
         }else{
             next();
