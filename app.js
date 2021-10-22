@@ -1,15 +1,17 @@
 const express = require("express");
 const app = express();
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/utilisateur')
 const chambreRoutes = require('./routes/chambre')
+const reservationRoutes = require('./routes/reservation')
+const path = require('path');
 
 mongoose.connect('mongodb+srv://squeld:aym160101@cluster0.8fclh.mongodb.net/apihotel?retryWrites=true&w=majority',
   { useNewUrlParser: true,
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
+
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,10 +20,13 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(bodyParser.json());
+app.use(express.json());
+//app.use(express.text());
 
+app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/apiHotel/auth', userRoutes);
 app.use('/apiHotel/chambre', chambreRoutes);
+app.use('/apiHotel/reservation', reservationRoutes);
 
 module.exports = app;
 

@@ -1,70 +1,56 @@
-const Thing = require('../models/chambre');
-const auth = require('../middleware/auth');
-const multer = require('../middleware/multer-config');
+const Chambre = require('../models/chambre');
 const fs = require('fs');
 
 
-exports.createChambre = ('/', auth, multer, (req,res,next) => {
-    const thingObject = JSON.parse(req.body.thing);
-    delete thingObject._id;
-    const thing = new Thing({
-        ...thingObject,
-        imageUrl : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+exports.createChambre = ( (req,res,next) => {
+    delete req.body._id;
+    console.log(req.file,req.body);
+    const chambre = new Chambre({
+        ...req.body,
+        image : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     });
-    thing.save()
+    chambre.save()
     .then(() => res.status(201).json({ message: 'Objet enregistré !'}))
     .catch(error => res.status(400).json({ error }));
 });
 
-exports.updateChambre = ('/:id', auth, multer, (req, res, next) => {
-    Thing.findById(req.params.id)
-        .then(thing => {
-            let test  = JSON.parse(req.body.thing)
-            //console.log(test,thing)
-            if (thing.userId == test.userId){
-                const thingObject = req.file ? {
-                ...JSON.parse(req.body.thing),
+exports.updateChambre = (req, res, next) => {
+    Chambre.findById(req.params.id)
+        .then(chambre => {
+                const chambreObject = req.file ? {
+                ...req.body,
                 imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
                 } : { ...req.body };
-                Thing.updateOne({ _id: req.params.id }, { ...thingObject, _id: req.params.id })
+                Chambre.updateOne({ _id: req.params.id }, { ...chambreObject, _id: req.params.id })
                 .then(() => res.status(200).json({ message: 'Objet modifié !'}))
                 .catch(error => res.status(400).json({ error }));
-            }else{
-                res.status(400).json({ mess:'Utilisateur incorrect' });
-            }
         })
-});
+};
 
-exports.suppChambre = ('/:id', auth, (req, res, next) => {
-    Thing.findById(req.params.id)
-        .then(thing => {
-            console.log(thing, req.userId)
-            if (thing.userId == req.userId){
-                Thing.findOne ({ _id: req.params.id })
-                    .then( thing => {
-                        const filename = thing.imageUrl.split('/images/')[1];
-                        fs.unlink(`images/${filename}`, () => {
-                        Thing.deleteOne({ _id: req.params.id })
-                            .then(() => res.status(200).json({ message: 'Deleted!'}))
-                            .catch(error => res.status(400).json({ error }));
-                        })
-                    }
-                    )
-                    .catch(error => res.status(500).json({ error }));
-            }else{
-                res.status(400).json({ mess:'Utilisateur incorrect' });
-            }
+exports.suppChambre = (req, res, next) => {
+    console.log(req.params)
+    Chambre.findById(req.params.id)
+        .then( chambre => {
+    //        console.log(req.params)
+    //        res.status(200).json({ message: 'Deleted!'})
+            const filename = chambre.image.split('/images/')[1];
+            fs.unlink(`images/${filename}`, () => {
+            Chambre.deleteOne({ _id: req.params.id })
+                .then(() => res.status(200).json({ message: 'Deleted!'}))
+                .catch(error => res.status(400).json({ error }));
+            })
         })
-});
+        .catch(error => res.status(503).json({ error }));
+};
 
-exports.affChambre = ('/:id', auth, (req,res, next) => {
-    Thing.findOne({_id: req.params.id})
-    .then(thing => res.status(200).json(thing))
+exports.affChambre = ((req,res, next) => {
+    Chambre.findOne({_id: req.params.id})
+    .then(chambre => res.status(200).json(chambre))
     .catch(error => res.status(400).json({ error }));
 });
 
-exports.affAllChambre = ('/', auth, (req, res, next) => {
-Thing.find()
-.then(things => res.status(200).json(things))
+exports.affAllChambre = ((req, res, next) => {
+Chambre.find()
+.then(chambre => res.status(200).json(chambre))
 .catch(error => res.status(400).json({ error }));
 });
